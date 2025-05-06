@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weekly Time & Salary Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background-color: #f9f9f9;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header img {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 700px;
+            margin: auto;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        input[type="time"], input[type="number"], input[type="text"] {
+            width: 90%;
+            padding: 6px;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #result {
+            margin-top: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <!-- Replace the src with your actual image path or URL -->
+    <img src="https://s3.ap-south-1.amazonaws.com/tmt-stagapp/upload/products/30231612610273.jpg" alt="Banner Image">
+</header>
+
+<h2>Weekly Time & Salary Calculator</h2>
+
+<div style="text-align: center; margin-bottom: 20px;">
+    <label for="staffName">Staff Name:</label><br>
+    <input type="text" id="staffName" required style="width: 300px;"><br><br>
+
+    <label for="hourlyRate">Hourly Rate (&#8377;):</label><br>
+    <input type="number" id="hourlyRate" min="0" required style="width: 150px;">
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Day</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Daily Duration (hrs:min)</th>
+        </tr>
+    </thead>
+    <tbody id="timeRows">
+        <!-- Rows will be inserted by JavaScript -->
+    </tbody>
+</table>
+
+<button onclick="calculateWeekly()">Calculate</button>
+
+<div id="result"></div>
+
+<script>
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+    // Dynamically create rows for each day
+    const tbody = document.getElementById('timeRows');
+    days.forEach((day, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${day}</td>
+            <td><input type="time" id="start${index}"></td>
+            <td><input type="time" id="end${index}"></td>
+            <td id="duration${index}">-</td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    function calculateWeekly() {
+        const hourlyRate = parseFloat(document.getElementById('hourlyRate').value);
+        const name = document.getElementById('staffName').value;
+        if (!name || isNaN(hourlyRate)) {
+            alert("Please enter a valid staff name and hourly rate.");
+            return;
+        }
+
+        let totalMinutes = 0;
+
+        for (let i = 0; i < 7; i++) {
+            const start = document.getElementById(`start${i}`).value;
+            const end = document.getElementById(`end${i}`).value;
+            let minutesWorked = 0;
+
+            if (start && end) {
+                const startTime = new Date(`1970-01-01T${start}:00`);
+                const endTime = new Date(`1970-01-01T${end}:00`);
+
+                if (endTime > startTime) {
+                    minutesWorked = (endTime - startTime) / 60000; // Convert milliseconds to minutes
+                }
+
+                const hours = Math.floor(minutesWorked / 60);
+                const minutes = Math.round(minutesWorked % 60);
+                document.getElementById(`duration${i}`).textContent = `${hours}:${minutes.toString().padStart(2, '0')}`;
+            } else {
+                document.getElementById(`duration${i}`).textContent = '-';
+            }
+
+            totalMinutes += minutesWorked;
+        }
+
+        const totalHours = totalMinutes / 60;
+        const totalPay = totalHours * hourlyRate;
+        const totalHoursInt = Math.floor(totalMinutes / 60);
+        const totalMinsInt = Math.round(totalMinutes % 60);
+
+        document.getElementById('result').innerHTML = `
+            <p>Total time worked: <strong>${totalHoursInt} hours and ${totalMinsInt} minutes</strong></p>
+            <p>Total weekly salary for <strong>${name}</strong>: <strong>&#8377;${totalPay.toFixed(2)}</strong></p>
+        `;
+    }
+</script>
+
+</body>
+</html>
